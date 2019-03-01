@@ -1,0 +1,5 @@
+# .logstashrc
+
+# custom command for logstash
+
+alias logstash_test='/bin/bash /admin/script/logstash_pipeline_test.sh'

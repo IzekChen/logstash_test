@@ -1,0 +1,70 @@
+---
+### create pipeline test enviroment
+
+- name: create directory if they don't exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: logstash
+    group: logstash
+    mode: 0655
+  with_items:
+    - /admin/logstash/etc
+    - /admin/logstash/lib
+    - /admin/script
+
+- name: cp /var/lib/logstash folder to /admin/logstash/lib
+  command: "cp -rp /var/lib/logstash /admin/logstash/lib/"
+
+- name: cp /etc/logstash folder to /admin/logstash /etc
+  command: "cp -rp /etc/logstash /admin/logstash/etc/"
+
+- name: cp test logstash.yml to test environment
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  with_items:
+    - { src: '/etc/ansible/roles/logstash-6x-yum/files/logstash_config/test_environment/logstash.yml', dest: '/admin/logstash/etc/logstash', mode: '0644'}
+
+
+- name: modify owner and group 
+  command: "chown -R logstash:logstash /admin/logstash"
+
+- name: ensure logstash log file exist
+  copy:
+    content: ""
+    dest: /var/log/logstash/logstash-plain.log
+    force: no
+    owner: logstash
+    group: logstash
+    mode: 0644
+
+- name: copy main test config to remote
+  copy:
+    src: /etc/ansible/roles/logstash-6x-yum/files/pipeline_config/main
+    dest: /admin/logstash/etc/logstash/pipeline
+    owner: logstash
+    group: logstash
+    mode: preserve
+
+- name: copy test script and environment file to remote
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: root
+    group: root
+  with_items:
+    - { src: '/etc/ansible/roles/logstash-6x-yum/files/script/logstash_pipeline_test.sh', dest: '/admin/script/logstash_pipeline_test.sh', mode: '0755'}
+    - { src: '/etc/ansible/roles/logstash-6x-yum/files/script/logstashrc', dest: '/root/.logstashrc', mode: '0600'}
+    - { src: '/etc/ansible/roles/logstash-6x-yum/files/script/add_to_profile', dest: '/admin/script/', mode: '0755'}
+
+- name: set permanently environmental variable
+  command: "/bin/bash /admin/script/add_to_profile"
+
+
+
+

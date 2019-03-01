@@ -1,0 +1,8 @@
+#!/bin/bash
+#if [ -f ~/.logstashrc ]; then
+#        . ~/.logstashrc
+#fi
+
+printf '%s\n' 'if [ -f ~/.logstashrc ]; then' \
+    '        . ~/.logstashrc' \
+    'fi' >>/root/.bash_profile
